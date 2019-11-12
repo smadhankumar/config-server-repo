@@ -1,0 +1,285 @@
+Supported Browsers
+End users accessing MongoDB Charts must use a current desktop version of Chrome, Firefox, or Safari on any operating system.
+
+Before You Install
+This section lists the required steps to complete before installing Charts.
+
+1
+Set up the Charts metadata database.
+Identify or configure a MongoDB deployment to store Charts metadata. For a production deployment, deploy MongoDB in a three member replica set and enable authentication.
+
+The connection URI of this deployment is required in a later step.
+
+2
+Download and install Docker on the MongoDB Charts host.
+MongoDB Charts runs within a Docker Linux container. Install Docker CE or EE (v17.06 or higher) on the Charts host. Charts runs on any OS or distribution supported by Docker, including Windows and macOS.
+
+3
+Delete older versions of Charts.
+If you have an older version of Charts deployed, delete it using the following command:
+
+docker stack rm mongodb-charts
+NOTE
+
+This will not remove any persisted data.
+
+Install MongoDB Charts
+Use the following procedure to install MongoDB Charts:
+
+1
+Create a directory to store your Charts configuration.
+Create a directory to store your Charts configuration, then change to the new directory:
+
+mkdir mongodb-charts
+cd mongodb-charts
+2
+Download the MongoDB Charts Docker Compose file.
+Download the latest version of the Charts Docker Compose file from the MongoDB Download Center and manually move it to the new directory.
+
+3
+Enable Docker Swarm mode.
+Run the following command to enable Docker Swarm mode:
+
+docker swarm init
+4
+Pull down the Charts image.
+docker pull quay.io/mongodb/charts:19.06.1
+NOTE
+
+If you are using a different version of Charts, replace 19.06.1 with the version number of your release.
+
+This command may take a while as it downloads a large file to the host server.
+
+5
+Test your connection to the Charts metadata database.
+MongoDB Charts requires a Connection String URI to connect to a MongoDB deployment which will store the Charts metadata. The MongoDB deployment must be reachable from the Charts host. If the MongoDB deployment is running with authentication enabled, you must provide the credentials in the connection string, and the MongoDB user must have the readWriteAnyDatabase role. When connecting to a replica set, the replicaSet URI option is required.
+
+RUNNING METADATA DATABASE ON LOCALHOST
+
+Charts interprets localhost as the Docker container Charts is running in. If the database is running on the same host as the Charts Docker container but not in Docker, it will not be reachable via mongodb://localhost. Instead, use one of the following URIs depending on your Docker version when creating the Docker secret in the command below:
+
+For Docker versions 18.03 and later:
+For Windows and macOS, use mongodb://host.docker.internal.
+For Linux, use the IP address of the docker0 interface. Normally, this address is 172.17.0.1.
+For Docker versions 17.06 up to but not including 18.03:
+For Windows, use mongodb://docker.for.win.localhost.
+For macOS, use mongodb://docker.for.mac.localhost.
+For Linux, use the IP address of the docker0 interface. Normally, this address is 172.17.0.1.
+Run the following command to test your connection string. Replace the placeholder connection string at the end of the command with your connection string URI:
+
+docker run --rm quay.io/mongodb/charts:19.06.1 charts-cli test-connection mongodb://<username>:<password>@myhost.com/
+NOTE
+
+If you are using a different version of Charts, replace 19.06.1 with the version number of your release.
+
+If the MongoDB Charts successfully connects to the specified MongoDB deployment, Charts displays the following message in the command line:
+
+MongoDB connection URI successfully verified.
+Pay careful attention to the output of this command, as it may include warnings of potential issues which could impact the deployment process.
+
+If MongoDB Charts cannot connect using the specified connection URI, Charts outlines possible troubleshooting actions to take to create a successful connection. For detailed troubleshooting information, refer to the Troubleshooting section.
+
+6
+Create a Docker secret for the Charts metadata database.
+Once you have verified that MongoDB Charts can successfully connect to your MongoDB deployment, create a Docker secret to hold the Connection String URI.
+
+Run the following command to create the Docker secret, substituting your connection string from the previous step:
+
+echo "<Verified connection string URI from step 5>" | docker secret create charts-mongodb-uri -
+NOTE
+
+If you are using a different orchestrator to run MongoDB Charts, such as Kubernetes, you may need to provide the MongoDB URI using an environment variable instead of a Docker secret. If you configure the CHARTS_MONGODB_URI environment variable within the container, this variable directs Charts to use this value for the connection instead of using the Docker secret. How you specify the environment variable depends on your chosen method for deploying the Charts Docker container.
+
+7
+(Optional) Configure the Feedback and Support widget.
+MongoDB Charts includes a widget on every page that allows users to request assistance or provide feedback to MongoDB. It also enables the transmission of usage statistics to MongoDB to help improve the product. These statistics include:
+
+Operations performed
+Chart types created
+Errors that MongoDB Charts returns
+Charts sends the logged-in user’s email and name to the Intercom system to help provide support. No data is collected or transmitted from the user’s databases.
+
+By default, the Feedback and Support widget is enabled.
+
+To disable the widget within MongoDB MongoDB Charts and prevent the transmission of usage statistics:
+
+Open charts-docker-swarm-<version>.yml.
+
+Set the following value:
+
+CHARTS_SUPPORT_WIDGET_AND_METRICS: "off"
+Restart MongoDB Charts.
+
+To re-enable the widget
+
+Open charts-docker-swarm-<version>.yml.
+
+Set the following value:
+
+CHARTS_SUPPORT_WIDGET_AND_METRICS: "on"
+Restart MongoDB Charts.
+
+8
+(Optional) Configure the MongoDB Charts web server to use HTTPS.
+You can either run MongoDB Charts using the default HTTP protocol, or configure the Charts web server to use the HTTPS protocol for additional security. For instructions on configuring HTTPS for MongoDB Charts, see Configure MongoDB Charts Web Server to Use HTTPS.
+
+9
+Launch the Charts container.
+Launch the Charts container as a Docker Stack using the Compose file:
+
+docker stack deploy -c charts-docker-swarm-19.06.1.yml mongodb-charts
+NOTE
+
+If you are using a different version of Charts, replace 19.06.1 with the version number of your release.
+
+10
+Verify the container is running.
+Check that the container is running by executing:
+
+docker service ls
+The Charts container should appear with mode replicated with 1/1 replicas:
+
+ID             NAME                    MODE         REPLICAS   IMAGE                   PORTS
+j77uo3slyg4l   mongodb-charts_charts   replicated   1/1        mongodb-charts:latest   *:80->80/tcp
+NOTE
+
+The service’s mode may not be replicated immediately. Docker does not display the status of certain deployment operations, so wait briefly then rerun docker service ls.
+
+If the service is stuck at 0/1 replicas and it’s mode is not replicated after an extended period of time, the service may not have deployed properly. For more information, see Troubleshooting.
+
+11
+Create Charts users.
+Once the container is running, execute the charts-cli add-user script within the container once for each Charts user account you want to create within MongoDB Charts. At mininum, you must use the script to create one user with the UserAdmin role in order to be able to log into Charts. After creating this initial user, you can either use the Charts user interface to add users or continue using the charts-cli add-user script to add users with either the UserAdmin or User role.
+
+To add users with the script, run the following command. Replace the placeholders in angle brackets with the appropriate values.
+
+Windows PowerShell	macOS	Linux
+docker exec -it `
+  $(docker container ls --filter name=_charts -q) `
+  charts-cli add-user --first-name "<First>" --last-name "<Last>" `
+  --email "<user@example.com>" --password "<Password>" `
+  --role "<UserAdmin|User>"
+For more information on roles and adding users, see User Management.
+
+12
+Launch the Charts web application.
+Access MongoDB Charts by opening a web browser and connecting to the name of the server running the container. Note that Charts runs on HTTP port 80 and HTTPS port 443 (if configured for HTTPS) unless you have modified the Docker Compose file to use different ports.
+
+13
+Back up your Charts installation keys.
+MongoDB Charts uses a number of keys and tokens to secure your deployment and encrypt sensitive data stored in the Charts metadata database. When you first deploy Charts, new random keys are automatically generated and saved to a Docker volume which persists the keys across container deployments.
+
+IMPORTANT
+
+If you want to redeploy Charts or move Charts to a new server, you will need to use the original keys in new deployments. If you deploy a new instance of Charts and point it to an existing Charts metadata database used by a previous deployment, the encryption keys will not match and the new instance of Charts will not be able to decrypt the metadata.
+
+To back up the keys, use the following commands to launch a temporary container that copies the key files from the Charts volume to a newly created directory on the host system:
+
+Windows PowerShell	macOS	Linux
+mkdir c:\temp\charts-keys-backup
+docker run -it `
+  --volume mongodb-charts_keys:/volume `
+  --volume /c/temp/charts-keys-backup:/backup `
+  alpine sh -c 'cp /volume/* /backup'
+NOTE
+
+This Docker command uses Unix-style paths on Windows.
+
+IMPORTANT
+
+Once the operation above completes, store the key in a secure location that is not on the Charts server.
+
+For more information, see Back Up and Restore Security Keys.
+
+Start and Stop MongoDB Charts
+MongoDB Charts executes within a single Docker container managed by Docker Swarm.
+
+To start Charts, deploy the stack using the supplied Docker Compose file:
+
+docker stack deploy -c charts-docker-swarm-19.06.1.yml mongodb-charts
+NOTE
+
+If you are using a different version of Charts, replace 19.06.1 with the version number of your release.
+
+To stop Charts, ask Docker to remove the stack:
+
+docker stack rm mongodb-charts
+Troubleshooting
+If MongoDB Charts does not successfully load in a browser after starting the Docker stack, try the following steps:
+
+1
+Verify the container is running.
+Check that the container is running by executing:
+
+docker service ls
+The Charts container should appear with mode replicated with 1/1 replicas:
+
+ID             NAME                    MODE         REPLICAS   IMAGE                   PORTS
+j77uo3slyg4l   mongodb-charts_charts   replicated   1/1        mongodb-charts:latest   *:80->80/tcp
+Proceed to the next step if any of the following conditions are met:
+
+The service is stuck at 0/1 replicas and its mode is not replicated after an extended period of time. This may indicate that the service did not deploy properly.
+If you recieve errors when running the charts-cli add-user script.
+The Charts application is not loading in your web browser.
+2
+Retrieve the logs from the running service.
+Retrieve the service logs by running the following command using the service ID from the previous step:
+
+docker service logs <service ID>
+The following example contains sample output from the command. Note each step has a tick or cross which could explain the issue:
+
+mongodb-charts_charts.1.nzcj90stcbmz@linuxkit-00155d01851f    |  ✔ encryptionKeyPath
+mongodb-charts_charts.1.nzcj90stcbmz@linuxkit-00155d01851f    |  ✔ stitchConfigTemplate
+mongodb-charts_charts.1.nzcj90stcbmz@linuxkit-00155d01851f    |  ✔ tokens
+mongodb-charts_charts.1.nzcj90stcbmz@linuxkit-00155d01851f    |  ✔ stitchConfig
+mongodb-charts_charts.1.nzcj90stcbmz@linuxkit-00155d01851f    |  ✔ stitchConfigWritten (true)
+mongodb-charts_charts.1.nzcj90stcbmz@linuxkit-00155d01851f    |  ✖
+mongoDBReachable failure: Can't connect to MongoDB at mongodb://mongod. Too many
+failed attempts. Last error: failed to connect to server [mongod:27017] on first
+connect [MongoNetworkError: getaddrinfo ENOTFOUND mongod mongod:27017]
+3
+Delete and recreate the Docker Secret for the metadata database.
+Malformed Connection String URIs commonly cause issues when deploying Charts. To modify the URI, you must remove the old Docker secret:
+
+docker secret rm charts-mongodb-uri
+Then recreate the secret:
+
+echo "mongodb://<username>:<password>@myhost.com/" | docker secret create charts-mongodb-uri -
+4
+Redeploy the Docker stack.
+If there are no obvious problems with the configuration, try deleting and redeploying the Docker stack.
+
+docker stack rm mongodb-charts
+Before redeploying, you need to ensure that the Charts containers are fully shut down. You can confirm this by running the docker ps command several times, until it shows no running Charts containers.
+
+Once all Charts containers have shut down, relaunch the stack using the following command:
+
+docker stack deploy -c charts-docker-swarm-19.06.1.yml mongodb-charts
+NOTE
+
+If you are using a different version of Charts, replace 19.06.1 with the version number of your release.
+
+5
+Contact MongoDB Support.
+If you still have trouble accessing the Charts application, submit a post describing your issue to the MongoDB Community Support forum.
+
+NOTE
+
+You must have a Google account to submit any posts to the Community Support forum.
+
+If you encounter any issues after installing MongoDB Charts, copy the logs from step 2 and contact MongoDB Support via the chat button within the MongoDB Charts application.
+
+NOTE
+
+The chat feature is not available when the Feedback and Support widget is disabled.
+
+Troubleshooting Docker Connections
+You may encounter issues connecting MongoDB Charts to a MongoDB deployment if the MongoDB deployment uses hostnames which are not routable inside the Docker container. In this case, specify the extra_hosts option in the Docker Compose file dowloaded in step 2 of the install procedure to manually map the hosts to your Docker container:
+
+services:
+  charts:
+    # Other settings will be set here
+    extra_hosts:
+      - "somehost:198.51.100.16"
+      - "otherhost:198.51.100.17"
+      - "anotherhost:203.0.113.0"
