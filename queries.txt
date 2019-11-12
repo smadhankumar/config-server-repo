@@ -1,0 +1,138 @@
+db.payment.insertMany([
+{"lob":"LOB1","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":12.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB1","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":113.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB1","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":31.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB1","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":678.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB1","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":456.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+])
+
+db.payment.insertMany([
+{"lob":"LOB2","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":546.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB2","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":23.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB2","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":45.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB2","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":13.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB2","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":565.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB2","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":678.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+])
+
+db.payment.insertMany([
+{"lob":"LOB3","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":567.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB3","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":324.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB3","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":434.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB3","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":324.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+{"lob":"LOB3","transactions":[{"created_dt" : ISODate("2019-02-05T13:10:07.007Z"),"updated_dt":ISODate("2019-02-15T12:51:04.728Z"),"premium_amount":234.0,   "paid_date" : ISODate("2019-02-05T17:00:00.000Z"),"transaction_status" : "COMPLETED","transaction_type" : "PAYMENT"}]}
+])
+
+
+
+
+
+db.payment_details.aggregate(
+                { 
+                                $group : {_id : "$lob", totalPayments : { $sum : 1 }}
+                }
+);
+
+LOB wise toal amount paid:
+db.payment_details.aggregate(
+                { 
+                                $group : {_id : "$lob", lob : "$lob", totalAmount : { $sum : "$settle_amount" }}
+                }
+);
+
+db.payment_details.aggregate([
+    { "$group": {
+        "_id": {
+            "lob": "$lob",
+            "status": "$transactions.transaction_status"
+        },
+       "statusCount": { "$sum": 1 }
+    }},
+    { "$group": {
+        "_id": "$_id.lob",
+        "statuss": { 
+            "$push": { 
+                "status": "$_id.status",
+                "statusCount": "$statusCount"
+            },
+        },
+        "totalCount": { "$sum": "$statusCount" }
+    }},
+    { "$sort": { "totalCount": -1 } },
+    { "$limit": 2 },
+    { "$project": {
+        "statuss": { "$slice": [ "$statuss", 2 ] },
+        "totalCount": 1
+    }}
+])
+
+
+db.payment_details.aggregate([
+                { $match: {"transactions.transaction_type": "PAYMENT"}}, 
+    { "$group": {
+        "_id": {
+            "lob": "$lob",
+            "status": "$transactions.transaction_status"
+        },
+        "count": { "$sum": 1 } 
+    }},
+    { "$group": {
+        "_id": "$_id.lob",
+        "statusCount": { "$push": { "status": "$_id.status", "count": "$count" } }
+    }}
+])
+
+
+db.collection.aggregate([
+                { $group:{
+                                _id:{
+                                                var1:"$lob",
+                                                var2:"$transactions.transaction_status"
+                                                "count":{
+                                                                $sum:1
+                                                }
+                                }
+                }}
+])
+
+-----------------------------
+working:
+db.getCollection('payment_details').aggregate(
+[
+                {
+                                $match:{
+                                                "transactions.paid_date":{$gte: new Date("2019-04-31T00:00:00.000Z"),$lte : new Date("2019-08-01T00:00:00.000Z")}
+                                }
+                },
+                {
+                                $project:{
+                                                lob:1,
+                                                "transactions": {
+                                                                $filter: {
+                                                                                input: "$transactions",
+                                                                                as: "transaction",
+                                                                                cond: {
+                                                                                                "$and": [
+                                                                                                                { "$gte": ["$$transaction.paid_date" , new Date("2019-04-31T00:00:00.000Z")] },
+                                                                                                                { "$lte": ["$$transaction.paid_date" , new Date("2019-08-31T00:00:00.000Z")] }
+                                                                                                ]
+                                                                                }
+                                                                }
+                                                }
+                                }
+                },
+                {
+                                $unwind:"$transactions"
+                },
+                {
+                                $group:{
+                                                _id: {
+                                                                lob:"$lob"
+                                                },
+                                                total_records:{
+                                                                $sum:1
+                                                }
+                                }
+                }      
+]  
+)
